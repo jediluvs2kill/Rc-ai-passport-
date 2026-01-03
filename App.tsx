@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Users, CarFront, Trophy, Menu, X, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Users, CarFront, Trophy, Menu, X, ArrowLeft, Ticket, Store, Briefcase, Gavel, LogOut } from 'lucide-react';
 import RacerPassport from './components/RacerPassport';
 import CarGarage from './components/CarGarage';
 import LiveRaceControl from './components/LiveRaceControl';
 import LandingPage from './components/LandingPage';
+import TicketCenter from './components/TicketCenter';
+import OrganizerDashboard from './components/OrganizerDashboard';
+import SponsorDashboard from './components/SponsorDashboard';
+import AdminDashboard from './components/AdminDashboard';
 import { RACERS, CARS, EVENTS, CURRENT_USER_ID } from './constants';
+import { UserRole } from './types';
 
-// Types for Navigation
-type View = 'dashboard' | 'passport' | 'garage' | 'ledger' | 'leaderboard';
+// Types for Navigation Views
+type View = 'dashboard' | 'passport' | 'garage' | 'ledger' | 'leaderboard' | 'tickets' | 'organizer_dash' | 'sponsor_dash' | 'admin_dash';
 
 const App: React.FC = () => {
-  const [showLanding, setShowLanding] = useState(true);
+  const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
   const [activeView, setActiveView] = useState<View>('passport');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -18,23 +23,7 @@ const App: React.FC = () => {
   const currentUser = RACERS.find(r => r.id === CURRENT_USER_ID) || RACERS[0];
   const myCars = CARS.filter(c => c.ownerId === CURRENT_USER_ID);
 
-  const renderContent = () => {
-    switch (activeView) {
-      case 'passport':
-        return <RacerPassport racer={currentUser} />;
-      case 'garage':
-        return <CarGarage cars={myCars} />;
-      case 'ledger':
-        return <LiveRaceControl events={EVENTS} racers={RACERS} />;
-      default:
-        return (
-            <div className="flex items-center justify-center h-full text-slate-500">
-                Work in Progress: {activeView.charAt(0).toUpperCase() + activeView.slice(1)}
-            </div>
-        );
-    }
-  };
-
+  // Navigation Item Helper
   const NavItem = ({ view, icon: Icon, label }: { view: View; icon: React.ElementType; label: string }) => (
     <button
       onClick={() => {
@@ -52,8 +41,49 @@ const App: React.FC = () => {
     </button>
   );
 
-  if (showLanding) {
-    return <LandingPage onEnter={() => setShowLanding(false)} />;
+  // Handle Role Selection Entry
+  const handleRoleEnter = (role: UserRole) => {
+    setCurrentRole(role);
+    
+    // Set default view based on role
+    switch(role) {
+        case 'racer': setActiveView('passport'); break;
+        case 'organizer': setActiveView('organizer_dash'); break;
+        case 'sponsor': setActiveView('sponsor_dash'); break;
+        case 'viewer': setActiveView('tickets'); break;
+        case 'admin': setActiveView('admin_dash'); break;
+        default: setActiveView('passport');
+    }
+  };
+
+  const handleLogout = () => {
+      setCurrentRole(null);
+      setActiveView('passport');
+  };
+
+  const renderContent = () => {
+    switch (activeView) {
+      case 'passport': return <RacerPassport racer={currentUser} />;
+      case 'garage': return <CarGarage cars={myCars} />;
+      case 'ledger': return <LiveRaceControl events={EVENTS} racers={RACERS} />;
+      case 'tickets': return <TicketCenter />;
+      case 'organizer_dash': return <OrganizerDashboard />;
+      case 'sponsor_dash': return <SponsorDashboard />;
+      case 'admin_dash': return <AdminDashboard />;
+      // Shared/Common Views
+      case 'leaderboard': return <div className="p-8 text-center text-slate-500">Global Leaderboard (Coming Soon)</div>;
+      default:
+        return (
+            <div className="flex items-center justify-center h-full text-slate-500">
+                Work in Progress: {activeView}
+            </div>
+        );
+    }
+  };
+
+  // If no role selected, show Landing Page
+  if (!currentRole) {
+    return <LandingPage onEnter={handleRoleEnter} />;
   }
 
   return (
@@ -71,32 +101,88 @@ const App: React.FC = () => {
             </h1>
           </div>
           
-          <button 
-            onClick={() => setShowLanding(true)}
-            className="text-xs text-slate-500 hover:text-white flex items-center gap-1 transition-colors pl-1"
-          >
-            <ArrowLeft size={12} /> Back to Home
-          </button>
+          <div className="px-3 py-1.5 bg-slate-800 rounded-lg text-xs font-bold text-slate-400 uppercase tracking-widest text-center border border-slate-700">
+             {currentRole} Portal
+          </div>
         </div>
 
-        <nav className="px-4 space-y-2">
-            <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest">My Career</div>
-            <NavItem view="passport" icon={Users} label="Racer Passport" />
-            <NavItem view="garage" icon={CarFront} label="Car Garage" />
+        <nav className="px-4 space-y-2 overflow-y-auto h-[calc(100vh-200px)]">
             
-            <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest mt-6">Competition</div>
-            <NavItem view="ledger" icon={LayoutDashboard} label="Race Ledger" />
-            <NavItem view="leaderboard" icon={Trophy} label="Rankings" />
+            {/* RACER NAVIGATION */}
+            {currentRole === 'racer' && (
+                <>
+                    <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest">My Career</div>
+                    <NavItem view="passport" icon={Users} label="Racer Passport" />
+                    <NavItem view="garage" icon={CarFront} label="Car Garage" />
+                    <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest mt-6">Competition</div>
+                    <NavItem view="ledger" icon={LayoutDashboard} label="Race Ledger" />
+                    <NavItem view="leaderboard" icon={Trophy} label="Rankings" />
+                    <NavItem view="tickets" icon={Ticket} label="Box Office" />
+                </>
+            )}
+
+            {/* ORGANIZER NAVIGATION */}
+            {currentRole === 'organizer' && (
+                <>
+                    <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest">Management</div>
+                    <NavItem view="organizer_dash" icon={Store} label="Dashboard" />
+                    <NavItem view="ledger" icon={LayoutDashboard} label="Race Ledger" />
+                    <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest mt-6">Tools</div>
+                    <NavItem view="garage" icon={CarFront} label="Scrutineering" />
+                </>
+            )}
+
+            {/* SPONSOR NAVIGATION */}
+            {currentRole === 'sponsor' && (
+                <>
+                    <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest">Brand</div>
+                    <NavItem view="sponsor_dash" icon={Briefcase} label="Console" />
+                    <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest mt-6">Discovery</div>
+                    <NavItem view="ledger" icon={LayoutDashboard} label="Events Ledger" />
+                    <NavItem view="leaderboard" icon={Trophy} label="Top Talent" />
+                </>
+            )}
+
+            {/* ADMIN NAVIGATION */}
+            {currentRole === 'admin' && (
+                <>
+                    <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest">Federation</div>
+                    <NavItem view="admin_dash" icon={Gavel} label="Oversight" />
+                    <NavItem view="ledger" icon={LayoutDashboard} label="Master Ledger" />
+                    <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest mt-6">Database</div>
+                    <NavItem view="passport" icon={Users} label="Racer Registry" />
+                    <NavItem view="garage" icon={CarFront} label="Car Registry" />
+                </>
+            )}
+
+             {/* VIEWER NAVIGATION */}
+             {currentRole === 'viewer' && (
+                <>
+                    <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-widest">Spectator</div>
+                    <NavItem view="tickets" icon={Ticket} label="Box Office" />
+                    <NavItem view="ledger" icon={LayoutDashboard} label="Live Results" />
+                    <NavItem view="leaderboard" icon={Trophy} label="Rankings" />
+                </>
+            )}
+
         </nav>
 
         <div className="absolute bottom-0 w-full p-4 border-t border-slate-800 bg-slate-900">
-           <div className="flex items-center gap-3">
-              <img src={currentUser.avatarUrl} className="w-10 h-10 rounded-full border border-slate-600" alt="Avatar"/>
-              <div className="flex-1 overflow-hidden">
-                  <div className="text-sm font-bold text-white truncate">{currentUser.name}</div>
-                  <div className="text-xs text-slate-500 truncate">{currentUser.handle}</div>
-              </div>
-           </div>
+           {currentRole === 'racer' ? (
+               <div className="flex items-center gap-3">
+                  <img src={currentUser.avatarUrl} className="w-10 h-10 rounded-full border border-slate-600" alt="Avatar"/>
+                  <div className="flex-1 overflow-hidden">
+                      <div className="text-sm font-bold text-white truncate">{currentUser.name}</div>
+                      <button onClick={handleLogout} className="text-xs text-red-400 hover:text-red-300 flex items-center gap-1 mt-0.5">
+                          <LogOut size={10} /> Sign Out
+                      </button>
+                  </div>
+               </div>
+           ) : (
+                <button onClick={handleLogout} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors w-full">
+                    <LogOut size={16} /> <span className="text-sm font-bold">Exit Portal</span>
+                </button>
+           )}
         </div>
       </aside>
 

@@ -1,18 +1,91 @@
 import React, { useState } from 'react';
-import { ChevronRight, ShieldCheck, Trophy, Car, FileText, Activity } from 'lucide-react';
+import { ChevronRight, ShieldCheck, Trophy, Car, FileText, Activity, Users, Store, Briefcase, Gavel, Ticket } from 'lucide-react';
 import RulebookModal from './RulebookModal';
+import { UserRole } from '../types';
 
 interface LandingPageProps {
-  onEnter: () => void;
+  onEnter: (role: UserRole) => void;
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
   const [showRulebook, setShowRulebook] = useState(false);
+  const [showRoleSelector, setShowRoleSelector] = useState(false);
+
+  const RoleCard = ({ role, icon: Icon, title, desc, color }: { role: UserRole, icon: any, title: string, desc: string, color: string }) => (
+    <button 
+      onClick={() => onEnter(role)}
+      className="bg-slate-900 border border-slate-800 hover:border-slate-600 p-6 rounded-xl text-left transition-all hover:-translate-y-1 group relative overflow-hidden"
+    >
+      <div className={`absolute top-0 right-0 p-20 bg-${color}-500/5 blur-3xl rounded-full -mr-10 -mt-10 transition-colors group-hover:bg-${color}-500/10`}></div>
+      <div className={`w-12 h-12 rounded-lg bg-slate-950 flex items-center justify-center mb-4 border border-slate-800 group-hover:border-${color}-500/50`}>
+        <Icon size={24} className={`text-${color}-400`} />
+      </div>
+      <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
+      <p className="text-slate-500 text-sm">{desc}</p>
+    </button>
+  );
 
   return (
     <div className="min-h-screen bg-slate-950 text-white selection:bg-cyan-500/30">
       
       {showRulebook && <RulebookModal onClose={() => setShowRulebook(false)} />}
+
+      {/* Role Selector Overlay */}
+      {showRoleSelector && (
+        <div className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className="max-w-4xl w-full">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-white display-font mb-2">Select Your Portal</h2>
+              <p className="text-slate-400">Identify your role to access the correct infrastructure.</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <RoleCard 
+                role="viewer" 
+                icon={Ticket} 
+                title="Spectator Box Office" 
+                desc="Buy tickets, view live leaderboards, and follow race results." 
+                color="cyan"
+              />
+              <RoleCard 
+                role="racer" 
+                icon={Users} 
+                title="Racer Portal" 
+                desc="Manage your passport, garage, and view your career stats." 
+                color="blue"
+              />
+              <RoleCard 
+                role="organizer" 
+                icon={Store} 
+                title="Organizer Dashboard" 
+                desc="Create events, manage entries, and certify results." 
+                color="emerald"
+              />
+              <RoleCard 
+                role="sponsor" 
+                icon={Briefcase} 
+                title="Sponsor Console" 
+                desc="Track campaign performance and brand reach." 
+                color="purple"
+              />
+              <RoleCard 
+                role="admin" 
+                icon={Gavel} 
+                title="Federation Admin" 
+                desc="Verify vehicles, oversee safety, and manage disputes." 
+                color="yellow"
+              />
+            </div>
+            
+            <button 
+              onClick={() => setShowRoleSelector(false)}
+              className="mt-10 mx-auto block text-slate-500 hover:text-white text-sm"
+            >
+              Cancel and go back
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="fixed w-full z-50 bg-slate-950/80 backdrop-blur border-b border-slate-800">
@@ -24,10 +97,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
             <span className="text-xl font-bold display-font tracking-wide">KARMIC<span className="text-cyan-400">RC</span></span>
           </div>
           <button 
-            onClick={onEnter}
+            onClick={() => setShowRoleSelector(true)}
             className="hidden md:flex items-center gap-2 text-sm font-bold text-slate-300 hover:text-white transition-colors"
           >
-            MEMBER LOGIN <ChevronRight size={16} />
+            SELECT PORTAL <ChevronRight size={16} />
           </button>
         </div>
       </nav>
@@ -53,10 +126,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
           
           <div className="flex flex-col md:flex-row items-center justify-center gap-4">
             <button 
-              onClick={onEnter}
+              onClick={() => setShowRoleSelector(true)}
               className="w-full md:w-auto px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-lg rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2"
             >
-              Access Dashboard <ChevronRight size={20} />
+              Access Platform <ChevronRight size={20} />
             </button>
             <button 
               onClick={() => setShowRulebook(true)}
@@ -118,18 +191,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnter }) => {
             </div>
 
           </div>
-        </div>
-      </section>
-
-      {/* Social Proof / Trust */}
-      <section className="py-20 px-6 text-center">
-        <h2 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8">Trusted by Premier Organizations</h2>
-        <div className="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-             {/* Mock Logos using text for simplicity, in a real app these would be SVGs */}
-             <span className="text-2xl font-black display-font text-white">URBAN<span className="text-cyan-500">RC</span></span>
-             <span className="text-2xl font-black display-font text-white">TARMAC<span className="text-purple-500">TITANS</span></span>
-             <span className="text-2xl font-black display-font text-white">SPEED<span className="text-yellow-500">WORLD</span></span>
-             <span className="text-2xl font-black display-font text-white">DRIFT<span className="text-emerald-500">KINGS</span></span>
         </div>
       </section>
 

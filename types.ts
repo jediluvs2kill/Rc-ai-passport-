@@ -1,3 +1,5 @@
+export type UserRole = 'racer' | 'organizer' | 'sponsor' | 'viewer' | 'admin';
+
 export enum DriverCategory {
   ROOKIE = 'Rookie',
   AMATEUR = 'Amateur',
@@ -31,7 +33,9 @@ export enum CarClass {
   STOCK_17_5 = 'Stock 17.5T',
   MODIFIED = 'Modified',
   FWD = 'FWD Touring',
-  F1 = 'Formula 1'
+  F1 = 'Formula 1',
+  BUGGY_2WD = '2WD Buggy',
+  BUGGY_4WD = '4WD Buggy'
 }
 
 export interface CarPart {
@@ -71,9 +75,11 @@ export interface RaceEvent {
   name: string;
   date: string;
   location: string;
-  trackCondition: 'High Grip' | 'Medium' | 'Dusty' | 'Wet';
+  trackCondition: 'High Grip' | 'Medium' | 'Dusty' | 'Wet' | 'Clay' | 'Carpet';
   verified: boolean;
   status: 'Upcoming' | 'Live' | 'Completed';
   class: CarClass;
+  ticketPrice?: number;
+  description?: string;
   entries: RaceEntry[];
 }
