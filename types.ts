@@ -70,6 +70,8 @@ export interface RaceEntry {
   gap?: string;
 }
 
+export type RaceType = 'Circuit' | 'Time Trial' | 'Drag' | 'Drift';
+
 export interface RaceEvent {
   id: string;
   name: string;
@@ -79,6 +81,7 @@ export interface RaceEvent {
   verified: boolean;
   status: 'Upcoming' | 'Live' | 'Completed';
   class: CarClass;
+  raceType?: RaceType;
   ticketPrice?: number;
   description?: string;
   entries: RaceEntry[];

@@ -1,21 +1,145 @@
-import React from 'react';
-import { Store, Plus, Users, CalendarCheck, TrendingUp, AlertCircle, ShieldCheck, FileCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Store, Plus, Users, CalendarCheck, TrendingUp, AlertCircle, ShieldCheck, FileCheck, X, Clock, MapPin, Flag } from 'lucide-react';
 import { EVENTS } from '../constants';
 import VerifiedBadge from './VerifiedBadge';
+import { RaceEvent, CarClass, RaceType } from '../types';
 
 const OrganizerDashboard: React.FC = () => {
-  const myEvents = EVENTS.slice(0, 3); // Mock: filter by organizer ID in real app
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [myEvents, setMyEvents] = useState(EVENTS.slice(0, 3));
+  
+  // Create Event Form State
+  const [newEvent, setNewEvent] = useState<Partial<RaceEvent>>({
+      name: '',
+      date: '',
+      location: '',
+      raceType: 'Circuit',
+      class: CarClass.STOCK_17_5
+  });
+
+  const handleCreateEvent = (e: React.FormEvent) => {
+      e.preventDefault();
+      // In a real app, this would make an API call
+      const createdEvent: RaceEvent = {
+          id: `evt_${Date.now()}`,
+          name: newEvent.name || 'New Event',
+          date: newEvent.date || new Date().toISOString().split('T')[0],
+          location: newEvent.location || 'TBD',
+          raceType: newEvent.raceType as RaceType,
+          class: newEvent.class as CarClass,
+          trackCondition: 'Medium',
+          verified: false, // Default unverified until approval
+          status: 'Upcoming',
+          entries: []
+      };
+      
+      setMyEvents([createdEvent, ...myEvents]);
+      setShowCreateModal(false);
+      setNewEvent({ name: '', date: '', location: '', raceType: 'Circuit', class: CarClass.STOCK_17_5 });
+  };
 
   return (
-    <div className="h-full overflow-y-auto pb-8">
+    <div className="h-full overflow-y-auto pb-8 relative">
       
+      {/* Create Event Modal */}
+      {showCreateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+              <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+                  <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+                      <h3 className="font-bold text-white text-lg">Create New Event</h3>
+                      <button onClick={() => setShowCreateModal(false)} className="text-slate-400 hover:text-white">
+                          <X size={20} />
+                      </button>
+                  </div>
+                  <form onSubmit={handleCreateEvent} className="p-6 space-y-4">
+                      <div>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Event Name</label>
+                          <input 
+                              type="text" 
+                              required
+                              placeholder="e.g. Sunday Club Race #4"
+                              className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-cyan-500"
+                              value={newEvent.name}
+                              onChange={e => setNewEvent({...newEvent, name: e.target.value})}
+                          />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                          <div>
+                              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Date</label>
+                              <input 
+                                  type="date" 
+                                  required
+                                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-cyan-500"
+                                  value={newEvent.date}
+                                  onChange={e => setNewEvent({...newEvent, date: e.target.value})}
+                              />
+                          </div>
+                          <div>
+                              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Time</label>
+                              <input 
+                                  type="time" 
+                                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-cyan-500"
+                              />
+                          </div>
+                      </div>
+                      <div>
+                          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Location</label>
+                          <div className="relative">
+                              <MapPin size={16} className="absolute left-3 top-3.5 text-slate-500" />
+                              <input 
+                                  type="text" 
+                                  required
+                                  placeholder="Track Name or Address"
+                                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 pl-10 text-white focus:outline-none focus:border-cyan-500"
+                                  value={newEvent.location}
+                                  onChange={e => setNewEvent({...newEvent, location: e.target.value})}
+                              />
+                          </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                           <div>
+                              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Race Type</label>
+                              <select 
+                                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-cyan-500 appearance-none"
+                                  value={newEvent.raceType}
+                                  onChange={e => setNewEvent({...newEvent, raceType: e.target.value as RaceType})}
+                              >
+                                  <option value="Circuit">Circuit</option>
+                                  <option value="Time Trial">Time Trial</option>
+                                  <option value="Drag">Drag Race</option>
+                                  <option value="Drift">Drift</option>
+                              </select>
+                           </div>
+                           <div>
+                              <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Class</label>
+                              <select 
+                                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-white focus:outline-none focus:border-cyan-500 appearance-none text-sm"
+                                  value={newEvent.class}
+                                  onChange={e => setNewEvent({...newEvent, class: e.target.value as CarClass})}
+                              >
+                                  {Object.values(CarClass).map(c => <option key={c} value={c}>{c}</option>)}
+                              </select>
+                           </div>
+                      </div>
+                      
+                      <button type="submit" className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded-lg mt-4 transition-colors">
+                          Create Event
+                      </button>
+                  </form>
+              </div>
+          </div>
+      )}
+
       {/* Header */}
       <div className="mb-8 flex justify-between items-end">
         <div>
            <h2 className="text-3xl font-bold text-white mb-2 display-font">Organizer Dashboard</h2>
            <p className="text-slate-400">Manage events, verify entries, and track club performance.</p>
         </div>
-        <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-900/20 transition-all">
+        <button 
+            onClick={() => setShowCreateModal(true)}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-emerald-900/20 transition-all"
+        >
             <Plus size={20} /> Create New Event
         </button>
       </div>
@@ -60,8 +184,9 @@ const OrganizerDashboard: React.FC = () => {
                     {myEvents.map(evt => (
                         <div key={evt.id} className="p-6 flex items-center justify-between hover:bg-slate-800/30 transition-colors">
                             <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-xl ${evt.status === 'Live' ? 'bg-red-500/20 text-red-500 border border-red-500/30 animate-pulse' : 'bg-slate-800 text-slate-500 border border-slate-700'}`}>
-                                  {evt.status === 'Live' ? 'LIVE' : new Date(evt.date).getDate()}
+                                <div className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-xl flex-col leading-none ${evt.status === 'Live' ? 'bg-red-500/20 text-red-500 border border-red-500/30 animate-pulse' : 'bg-slate-800 text-slate-500 border border-slate-700'}`}>
+                                  {evt.status === 'Live' ? <span className="text-[10px] mb-0.5">LIVE</span> : <span className="text-sm">{new Date(evt.date).toLocaleString('default', { month: 'short' })}</span>}
+                                  <span className="text-lg">{new Date(evt.date).getDate()}</span>
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
@@ -76,9 +201,9 @@ const OrganizerDashboard: React.FC = () => {
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="text-right">
+                                <div className="text-right hidden sm:block">
                                   <div className="text-sm font-bold text-white">{evt.entries.length} Entries</div>
-                                  <div className="text-xs text-slate-500">{evt.status}</div>
+                                  <div className="text-xs text-slate-500">{evt.raceType || 'Circuit'}</div>
                                 </div>
                                 <button className="px-4 py-2 border border-slate-700 hover:bg-slate-800 text-slate-300 rounded-lg text-sm font-bold transition-colors">
                                     Manage

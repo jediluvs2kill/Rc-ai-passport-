@@ -8,6 +8,7 @@ import TicketCenter from './components/TicketCenter';
 import OrganizerDashboard from './components/OrganizerDashboard';
 import SponsorDashboard from './components/SponsorDashboard';
 import AdminDashboard from './components/AdminDashboard';
+import SeasonLeaderboard from './components/SeasonLeaderboard';
 import { RACERS, CARS, EVENTS, CURRENT_USER_ID } from './constants';
 import { UserRole } from './types';
 
@@ -70,8 +71,7 @@ const App: React.FC = () => {
       case 'organizer_dash': return <OrganizerDashboard />;
       case 'sponsor_dash': return <SponsorDashboard />;
       case 'admin_dash': return <AdminDashboard />;
-      // Shared/Common Views
-      case 'leaderboard': return <div className="p-8 text-center text-slate-500">Global Leaderboard (Coming Soon)</div>;
+      case 'leaderboard': return <SeasonLeaderboard />; // Updated to use new component
       default:
         return (
             <div className="flex items-center justify-center h-full text-slate-500">
