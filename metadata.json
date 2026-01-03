@@ -1,0 +1,5 @@
+{
+  "name": "Velocity Ledger (RC Nexus)",
+  "description": "The official infrastructure for RC racing. Features Racer Passports, verified Car Passports, and an immutable Race Ledger with AI-powered race analysis.",
+  "requestFramePermissions": []
+}
